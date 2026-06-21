@@ -412,10 +412,23 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
       <!-- Phone Numbers -->
       <div class="a-card">
         <div class="a-card-title">📞 أرقام واتساب المحل</div>
-        <div style="font-size:11px;color:#ff7c5c;margin-bottom:8px;font-weight:700;">⚠️ مهم: دول الأرقام اللي هتستقبل الطلبات من العملاء</div>
-        <label class="modal-lbl" style="color:var(--gold2);">رقم 1 (الأساسي — لاستقبال الطلبات)</label>
+
+        <!-- Important notice -->
+        <div style="background:rgba(255,193,7,0.08);border:1.5px solid rgba(255,193,7,0.4);border-radius:10px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:6px;">⚠️ مهم جداً — اقرأ قبل ما تكتب الأرقام</div>
+          <div style="font-size:11px;color:#ccc;line-height:1.7;">
+            الأرقام اللي بتحطها هنا بتتحفظ على <b style="color:#FFD700;">جهازك انت بس</b> ومش بتوصل للعملاء.<br>
+            عشان الأرقام تشتغل مع <b style="color:#FFD700;">كل العملاء</b>، لازم تعدّل الكود مباشرة في Acode:<br><br>
+            1️⃣ افتح ملف <b style="color:#FFD700;">index.html</b> في Acode<br>
+            2️⃣ ابحث عن: <code style="background:#222;padding:2px 6px;border-radius:4px;color:#FFD700;">FIXED_WA1</code><br>
+            3️⃣ حط رقمك جوا الـ quotes زي كده:<br>
+            <code style="background:#222;padding:4px 8px;border-radius:4px;color:#2ecc71;display:block;margin-top:4px;font-size:10px;">const FIXED_WA1 = '201221023372';<br>const FIXED_WA2 = '201055070830';</code>
+          </div>
+        </div>
+
+        <label class="modal-lbl" style="color:var(--gold2);">رقم 1 (الأساسي — لاستقبال الطلبات) — على جهازك بس</label>
         <input class="af" id="waNum1F" placeholder="مثال: 201062493242" type="tel">
-        <label class="modal-lbl">رقم 2 (احتياطي للتواصل)</label>
+        <label class="modal-lbl">رقم 2 (احتياطي للتواصل) — على جهازك بس</label>
         <input class="af" id="waNum2F" placeholder="مثال: 201099999999" type="tel">
         <div style="font-size:10px;color:var(--gray);">اكتب الأرقام بدون + أو 00 — مثال: 201062493242</div>
       </div>
@@ -561,8 +574,14 @@ let cart = JSON.parse(localStorage.getItem('mk_cart')) || [];
 let profile = JSON.parse(localStorage.getItem('mk_profile')) || {name:'',phone:'',addr:'',days:[]};
 let orders = JSON.parse(localStorage.getItem('mk_orders')) || [];
 let adminPass = localStorage.getItem('mk_apass') || 'malika2024';
-let waNum1 = localStorage.getItem('mk_wn1') || '';
-let waNum2 = localStorage.getItem('mk_wn2') || '';
+// ============================================================
+// ⚠️ الأدمن: عدّل الرقمين هنا مباشرة في الكود
+// اكتب الرقم بدون + أو 00 (مثال: 201062493242)
+const FIXED_WA1 = ''; // ← رقم 1 الأساسي (لاستقبال الطلبات)
+const FIXED_WA2 = ''; // ← رقم 2 الاحتياطي
+// ============================================================
+let waNum1 = localStorage.getItem('mk_wn1') || FIXED_WA1;
+let waNum2 = localStorage.getItem('mk_wn2') || FIXED_WA2;
 let nextId = parseInt(localStorage.getItem('mk_nid')||'2000');
 let curPage = 'home';
 let adminIn = false;
