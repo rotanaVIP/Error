@@ -413,22 +413,15 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
       <div class="a-card">
         <div class="a-card-title">📞 أرقام واتساب المحل</div>
 
-        <!-- Important notice -->
-        <div style="background:rgba(255,193,7,0.08);border:1.5px solid rgba(255,193,7,0.4);border-radius:10px;padding:12px;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:6px;">⚠️ مهم جداً — اقرأ قبل ما تكتب الأرقام</div>
-          <div style="font-size:11px;color:#ccc;line-height:1.7;">
-            الأرقام اللي بتحطها هنا بتتحفظ على <b style="color:#FFD700;">جهازك انت بس</b> ومش بتوصل للعملاء.<br>
-            عشان الأرقام تشتغل مع <b style="color:#FFD700;">كل العملاء</b>، لازم تعدّل الكود مباشرة في Acode:<br><br>
-            1️⃣ افتح ملف <b style="color:#FFD700;">index.html</b> في Acode<br>
-            2️⃣ ابحث عن: <code style="background:#222;padding:2px 6px;border-radius:4px;color:#FFD700;">FIXED_WA1</code><br>
-            3️⃣ حط رقمك جوا الـ quotes زي كده:<br>
-            <code style="background:#222;padding:4px 8px;border-radius:4px;color:#2ecc71;display:block;margin-top:4px;font-size:10px;">const FIXED_WA1 = '201221023372';<br>const FIXED_WA2 = '201055070830';</code>
-          </div>
+        <!-- Online save notice -->
+        <div style="background:rgba(46,204,113,0.08);border:1.5px solid rgba(46,204,113,0.35);border-radius:10px;padding:10px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:800;color:#2ecc71;margin-bottom:4px;">🌐 حفظ أونلاين — يوصل لكل العملاء فوراً</div>
+          <div style="font-size:11px;color:#ccc;line-height:1.7;">اكتب الأرقام واضغط "حفظ جميع التغييرات" — هيتحفظ على الإنترنت ويظهر لكل العملاء في كل الأجهزة تلقائياً.</div>
         </div>
 
-        <label class="modal-lbl" style="color:var(--gold2);">رقم 1 (الأساسي — لاستقبال الطلبات) — على جهازك بس</label>
+        <label class="modal-lbl" style="color:var(--gold2);">رقم 1 — الأساسي (لاستقبال الطلبات)</label>
         <input class="af" id="waNum1F" placeholder="مثال: 201062493242" type="tel">
-        <label class="modal-lbl">رقم 2 (احتياطي للتواصل) — على جهازك بس</label>
+        <label class="modal-lbl">رقم 2 — احتياطي للتواصل</label>
         <input class="af" id="waNum2F" placeholder="مثال: 201099999999" type="tel">
         <div style="font-size:10px;color:var(--gray);">اكتب الأرقام بدون + أو 00 — مثال: 201062493242</div>
       </div>
@@ -575,13 +568,12 @@ let profile = JSON.parse(localStorage.getItem('mk_profile')) || {name:'',phone:'
 let orders = JSON.parse(localStorage.getItem('mk_orders')) || [];
 let adminPass = localStorage.getItem('mk_apass') || 'malika2024';
 // ============================================================
-// ⚠️ الأدمن: عدّل الرقمين هنا مباشرة في الكود
-// اكتب الرقم بدون + أو 00 (مثال: 201062493242)
-const FIXED_WA1 = ''; // ← رقم 1 الأساسي (لاستقبال الطلبات)
-const FIXED_WA2 = ''; // ← رقم 2 الاحتياطي
+// ✅ الأرقام بتتحفظ أونلاين — لما الأدمن يحفظ بيوصل لكل الناس
+const BLOB_ID = '019eee17-dc87-7332-88e8-393f4b169587';
+const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
 // ============================================================
-let waNum1 = localStorage.getItem('mk_wn1') || FIXED_WA1;
-let waNum2 = localStorage.getItem('mk_wn2') || FIXED_WA2;
+let waNum1 = '';
+let waNum2 = '';
 let nextId = parseInt(localStorage.getItem('mk_nid')||'2000');
 let curPage = 'home';
 let adminIn = false;
@@ -1060,11 +1052,24 @@ function changePass(){
 function saveAdmin(){
   waNum1=document.getElementById('waNum1F').value.trim();
   waNum2=document.getElementById('waNum2F').value.trim();
-  localStorage.setItem('mk_wn1',waNum1);
-  localStorage.setItem('mk_wn2',waNum2);
-  persist();
-  const b=document.getElementById('sucBanner');b.style.display='block';setTimeout(()=>b.style.display='none',3000);
-  toast('✅ تم حفظ جميع التغييرات','ok');
+  // حفظ أونلاين — بيوصل لكل العملاء
+  const savingToast = () => toast('⏳ جاري الحفظ...','ok');
+  savingToast();
+  fetch(BLOB_URL, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({waNum1, waNum2})
+  }).then(r => {
+    if(r.ok){
+      persist();
+      const b=document.getElementById('sucBanner');b.style.display='block';setTimeout(()=>b.style.display='none',3000);
+      toast('✅ تم الحفظ — الأرقام وصلت لكل العملاء الآن','ok');
+    } else {
+      toast('❌ خطأ في الحفظ — جرب مرة ثانية','err');
+    }
+  }).catch(()=>{
+    toast('❌ مفيش إنترنت — تأكد من الاتصال','err');
+  });
 }
 
 // ======= Image Upload =======
@@ -1099,6 +1104,14 @@ function toast(msg,type='ok'){
 }
 
 // ================== INIT ==================
+// جيب الأرقام من الإنترنت أول ما الصفحة تفتح
+fetch(BLOB_URL)
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.waNum1) waNum1=d.waNum1;
+    if(d.waNum2) waNum2=d.waNum2;
+  })
+  .catch(()=>{}); // لو مفيش نت — الأرقام تفضل فاضية
 renderHome();
 updateCartUI();
 </script>
