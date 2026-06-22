@@ -413,10 +413,17 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
       <div class="a-card">
         <div class="a-card-title">📞 أرقام واتساب المحل</div>
 
-        <!-- Online save notice -->
-        <div style="background:rgba(46,204,113,0.08);border:1.5px solid rgba(46,204,113,0.35);border-radius:10px;padding:10px;margin-bottom:12px;">
-          <div style="font-size:12px;font-weight:800;color:#2ecc71;margin-bottom:4px;">🌐 حفظ أونلاين — يوصل لكل العملاء فوراً</div>
-          <div style="font-size:11px;color:#ccc;line-height:1.7;">اكتب الأرقام واضغط "حفظ جميع التغييرات" — هيتحفظ على الإنترنت ويظهر لكل العملاء في كل الأجهزة تلقائياً.</div>
+        <!-- GitHub token one-time setup -->
+        <div style="background:rgba(255,193,7,0.07);border:1.5px solid rgba(255,193,7,0.35);border-radius:10px;padding:10px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:800;color:#FFD700;margin-bottom:6px;">🔑 إعداد مرة واحدة — GitHub Token</div>
+          <div style="font-size:11px;color:#ccc;line-height:1.8;margin-bottom:8px;">
+            عشان الرقم يوصل لكل العملاء تلقائياً، محتاج Token من GitHub مرة واحدة بس:<br>
+            1️⃣ <a href="https://github.com/settings/tokens/new?scopes=repo&description=Malika+Store" target="_blank" style="color:#FFD700;">اضغط هنا</a> → سمّيه أي اسم → اضغط Generate<br>
+            2️⃣ انسخ الـ Token والصقه هنا 👇
+          </div>
+          <input class="af" id="ghTokenF" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" type="password"
+            style="font-size:11px;letter-spacing:1px;">
+          <div style="font-size:10px;color:#888;margin-top:4px;">الـ Token بيتحفظ على جهازك بس ومحدش غيرك يشوفه</div>
         </div>
 
         <label class="modal-lbl" style="color:var(--gold2);">رقم 1 — الأساسي (لاستقبال الطلبات)</label>
@@ -568,12 +575,15 @@ let profile = JSON.parse(localStorage.getItem('mk_profile')) || {name:'',phone:'
 let orders = JSON.parse(localStorage.getItem('mk_orders')) || [];
 let adminPass = localStorage.getItem('mk_apass') || 'malika2024';
 // ============================================================
-// ✅ الأرقام بتتحفظ أونلاين — لما الأدمن يحفظ بيوصل لكل الناس
-const BLOB_ID = '019eee17-dc87-7332-88e8-393f4b169587';
-const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
+// إعدادات GitHub — لتحديث الأرقام لكل العملاء
+const GH_OWNER = 'tanavip';
+const GH_REPO  = 'tanavip.github.io';
+const GH_FILE  = 'config.json';
+const GH_RAW   = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`;
+const GH_API   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
 // ============================================================
-let waNum1 = '';
-let waNum2 = '';
+let waNum1 = localStorage.getItem('mk_wn1') || '';
+let waNum2 = localStorage.getItem('mk_wn2') || '';
 let nextId = parseInt(localStorage.getItem('mk_nid')||'2000');
 let curPage = 'home';
 let adminIn = false;
@@ -905,6 +915,8 @@ function doLogin(){
 function renderAdmin(){
   document.getElementById('waNum1F').value=waNum1;
   document.getElementById('waNum2F').value=waNum2;
+  const savedTok=localStorage.getItem('gh_tok')||'';
+  if(savedTok) document.getElementById('ghTokenF').value=savedTok;
   // Tabs
   let tabs='';
   tabs+=`<button class="a-cat-tab offers-tab ${adminCurCat==='offers'?'active':''}" onclick="adminSelCat('offers')">🔥 العروض (${offers.length})</button>`;
@@ -1049,27 +1061,45 @@ function changePass(){
   adminPass=np;localStorage.setItem('mk_apass',adminPass);
   document.getElementById('npField').value='';toast('✅ تم تغيير كلمة المرور','ok');
 }
-function saveAdmin(){
-  waNum1=document.getElementById('waNum1F').value.trim();
-  waNum2=document.getElementById('waNum2F').value.trim();
-  // حفظ أونلاين — بيوصل لكل العملاء
-  const savingToast = () => toast('⏳ جاري الحفظ...','ok');
-  savingToast();
-  fetch(BLOB_URL, {
-    method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({waNum1, waNum2})
-  }).then(r => {
-    if(r.ok){
-      persist();
+async function saveAdmin(){
+  const tok = document.getElementById('ghTokenF').value.trim() || localStorage.getItem('gh_tok') || '';
+  waNum1 = document.getElementById('waNum1F').value.trim();
+  waNum2 = document.getElementById('waNum2F').value.trim();
+  // حفظ token محلياً
+  if(tok) localStorage.setItem('gh_tok', tok);
+  // حفظ محلي دايماً
+  localStorage.setItem('mk_wn1', waNum1);
+  localStorage.setItem('mk_wn2', waNum2);
+  persist();
+  if(!tok){
+    toast('⚠️ أدخل GitHub Token عشان الرقم يوصل لكل الناس','err');
+    return;
+  }
+  toast('⏳ جاري الحفظ على GitHub...','ok');
+  try {
+    // جيب الـ SHA الحالي للملف (لو موجود)
+    let sha = '';
+    const getR = await fetch(GH_API, {
+      headers:{'Authorization':`token ${tok}`,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(getR.ok){const gd=await getR.json(); sha=gd.sha||'';}
+    // ارفع الملف الجديد
+    const content = btoa(JSON.stringify({waNum1,waNum2}));
+    const putR = await fetch(GH_API, {
+      method:'PUT',
+      headers:{'Authorization':`token ${tok}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body: JSON.stringify({message:'تحديث أرقام المحل',content, sha: sha||undefined})
+    });
+    if(putR.ok){
       const b=document.getElementById('sucBanner');b.style.display='block';setTimeout(()=>b.style.display='none',3000);
-      toast('✅ تم الحفظ — الأرقام وصلت لكل العملاء الآن','ok');
+      toast('✅ تم الحفظ — الرقم هيظهر لكل العملاء خلال دقيقة','ok');
     } else {
-      toast('❌ خطأ في الحفظ — جرب مرة ثانية','err');
+      const err=await putR.json();
+      toast('❌ '+(err.message||'خطأ في GitHub'),'err');
     }
-  }).catch(()=>{
-    toast('❌ مفيش إنترنت — تأكد من الاتصال','err');
-  });
+  } catch(e){
+    toast('❌ تأكد من الإنترنت وصحة الـ Token','err');
+  }
 }
 
 // ======= Image Upload =======
@@ -1104,14 +1134,17 @@ function toast(msg,type='ok'){
 }
 
 // ================== INIT ==================
-// جيب الأرقام من الإنترنت أول ما الصفحة تفتح
-fetch(BLOB_URL)
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.waNum1) waNum1=d.waNum1;
-    if(d.waNum2) waNum2=d.waNum2;
-  })
-  .catch(()=>{}); // لو مفيش نت — الأرقام تفضل فاضية
+// جيب أرقام المحل من GitHub عند كل تحميل للصفحة
+(async function(){
+  try{
+    const r = await fetch(GH_RAW + '?_=' + Date.now());
+    if(r.ok){
+      const d = await r.json();
+      if(d.waNum1){waNum1=d.waNum1;localStorage.setItem('mk_wn1',waNum1);}
+      if(d.waNum2){waNum2=d.waNum2;localStorage.setItem('mk_wn2',waNum2);}
+    }
+  }catch(e){}
+})();
 renderHome();
 updateCartUI();
 </script>
