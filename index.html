@@ -1,4 +1,4 @@
-koi<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -1087,10 +1087,27 @@ function changePass(){
   adminPass=np;localStorage.setItem('mk_apass',adminPass);
   document.getElementById('npField').value='';toast('✅ تم تغيير كلمة المرور','ok');
 }
+// استبدل دالة saveAdmin الحالية بهذا الكود
 function saveAdmin(){
-  persist();
-  const b=document.getElementById('sucBanner');b.style.display='block';setTimeout(()=>b.style.display='none',3000);
-  toast('✅ تم الحفظ','ok');
+  // نقوم بتحديث الـ LocalStorage أولاً
+  localStorage.setItem('mk_cats', JSON.stringify(cats));
+  localStorage.setItem('mk_offers', JSON.stringify(offers));
+  localStorage.setItem('mk_nid', nextId);
+
+  // دفع البيانات فوراً لـ Firebase لتنبيه كافة المتصفحات المفتوحة
+  rdb.ref('market_data').set({
+      cats: cats,
+      offers: offers
+  }).then(() => {
+      const b = document.getElementById('sucBanner');
+      b.style.display = 'block';
+      setTimeout(() => b.style.display = 'none', 3000);
+      toast('✅ تم الحفظ وإرسال التحديثات للعملاء!', 'ok');
+  }).catch((error) => {
+      toast('❌ فشل الحفظ: ' + error.message, 'err');
+  });
+
+
 }
 
 // ======= Image Upload =======
