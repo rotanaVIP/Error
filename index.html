@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>مجمدات الملكه 👑</title>
@@ -559,25 +562,61 @@ const DFLT_CATS = [
 // ================== STATE ==================
 let cats = JSON.parse(localStorage.getItem('mk_cats')) || JSON.parse(JSON.stringify(DFLT_CATS));
 let offers = JSON.parse(localStorage.getItem('mk_offers')) || [];
-// offers: [{id,name,oldPrice,newPrice,avail,img}]
 let cart = JSON.parse(localStorage.getItem('mk_cart')) || [];
 let profile = JSON.parse(localStorage.getItem('mk_profile')) || {name:'',phone:'',addr:'',days:[]};
 let orders = JSON.parse(localStorage.getItem('mk_orders')) || [];
 let adminPass = localStorage.getItem('mk_apass') || 'malika2024';
-// ====================================================
-// ✏️ اكتب رقمك هنا — رقم 1 ورقم 2
-// بدون + أو 00 (مثال: 201062493242)
-const PHONE1 = '201221023372'; // ← رقم 1 (لاستقبال الطلبات)
-const PHONE2 = '201055070830'; // ← رقم 2 (احتياطي) — حط رقمك هنا لو عندك تاني
-// ====================================================
-let waNum1 = PHONE1;
-let waNum2 = PHONE2;
-let nextId = parseInt(localStorage.getItem('mk_nid')||'2000');
-let curPage = 'home';
-let adminIn = false;
-let adminCurCat = 0; // 0=first cat, 'offers'=offers tab
-let curFilter = 0;
 
+// المتغيرات الأساسية لإدارة حالة الصفحة (كانت ناقصة وتسبب شلل الموقع)
+let curPage = 'home';
+let curFilter = 0;
+let adminIn = false;
+let adminCurCat = cats.length ? cats[0].id : 0;
+let nextId = parseInt(localStorage.getItem('mk_nid')) || 1000;
+
+// ====================================================
+// ✏️ أرقام الواتساب الأساسية
+// ====================================================
+const PHONE1 = '201221023372'; 
+let waNum1 = PHONE1;
+let waNum2 = '';
+
+// ====================================================
+// 🌐 الربط السحابي لـ Firebase
+// ====================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCp-bslMY5A0Qx6hleU",
+  authDomain: "rotana-83f27.firebaseapp.com",
+  projectId: "rotana-83f27",
+  storageBucket: "rotana-83f27.appspot.com",
+  messagingSenderId: "438317902041",
+  appId: "1:438317902041:web:e0e02c61fe65aae0e02c",
+  databaseURL: "https://rotana-83f27-default-rtdb.firebaseio.com"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const rdb = firebase.database();
+
+// الاستماع المباشر للتعديلات القادمة من الفايربيز
+rdb.ref('market_data').on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    if(data.cats) {
+        cats = data.cats;
+        localStorage.setItem('mk_cats', JSON.stringify(cats));
+    }
+    if(data.offers) {
+        offers = data.offers;
+        localStorage.setItem('mk_offers', JSON.stringify(offers));
+    }
+    
+    // تحديث الواجهة فوراً بناءً على الصفحة الحالية
+    if (curPage === 'home') renderHome();
+    else if (curPage === 'cart') renderCart();
+});
+
+// دالة حفظ البيانات محلياً وسحابياً
 function persist(){
   localStorage.setItem('mk_cats',JSON.stringify(cats));
   localStorage.setItem('mk_offers',JSON.stringify(offers));
@@ -585,6 +624,11 @@ function persist(){
   localStorage.setItem('mk_profile',JSON.stringify(profile));
   localStorage.setItem('mk_orders',JSON.stringify(orders));
   localStorage.setItem('mk_nid',nextId);
+
+  rdb.ref('market_data').set({
+      cats: cats,
+      offers: offers
+  });
 }
 
 // ================== NAVIGATION ==================
@@ -602,6 +646,7 @@ function showPage(p){
   window.scrollTo(0,0);
   updateCartUI();
 }
+
 function goAdmin(){
   showPage('admin');
   if(adminIn){
@@ -650,7 +695,6 @@ function renderProducts(filter=0,q=''){
   const el=document.getElementById('productsList');
   let h='';
 
-  // --- Show Offers Section ---
   if(filter===0||filter==='offers'){
     const filteredOffers=offers.filter(o=>!q||o.name.includes(q));
     if(filteredOffers.length>0||filter==='offers'){
@@ -658,7 +702,6 @@ function renderProducts(filter=0,q=''){
     }
   }
 
-  // --- Show Categories ---
   if(filter!=='offers'){
     const showCats=filter===0?cats:cats.filter(c=>c.id===filter);
     showCats.forEach(cat=>{
@@ -839,7 +882,6 @@ function sendOrder(){
   orders.unshift({id:Date.now(),date:new Date().toLocaleDateString('ar-EG'),items:[...cart],total,name,phone,addr,status:'قيد المعالجة'});
   profile={...profile,name,phone,addr};
   cart=[];persist();updateCartUI();
-  // Open WhatsApp to STORE number 1 — customer's WA opens a chat to the store
   window.open(`https://wa.me/${waNum1}?text=${encodeURIComponent(msg)}`,'_blank');
   toast('✅ تم إرسال الطلب!','ok');
   setTimeout(()=>showPage('home'),1100);
@@ -892,7 +934,7 @@ function doLogin(){
     document.getElementById('adminLoginV').style.display='none';
     document.getElementById('adminPanel').style.display='block';
     document.getElementById('apIn').value='';
-    adminCurCat=cats.length?cats[0].id:0;
+    adminCurCat=cats.length?cats[0].id:'offers';
     renderAdmin();toast('✅ مرحباً بك في لوحة التحكم','ok');
   } else {
     toast('❌ كلمة المرور خاطئة','err');
@@ -903,14 +945,12 @@ function doLogin(){
 function renderAdmin(){
   document.getElementById('curPhone1').textContent = waNum1 || 'غير محدد';
   document.getElementById('curPhone2').textContent = waNum2 || 'غير محدد';
-  // Tabs
   let tabs='';
   tabs+=`<button class="a-cat-tab offers-tab ${adminCurCat==='offers'?'active':''}" onclick="adminSelCat('offers')">🔥 العروض (${offers.length})</button>`;
   cats.forEach(c=>{
     tabs+=`<button class="a-cat-tab ${adminCurCat===c.id?'active':''}" onclick="adminSelCat(${c.id})">${c.name}</button>`;
   });
   document.getElementById('adminTabs').innerHTML=tabs;
-  // Show/hide add boxes
   document.getElementById('addProdBox').style.display=adminCurCat==='offers'?'none':'block';
   document.getElementById('addOfferBox').style.display=adminCurCat==='offers'?'block':'none';
   renderAdminProds();
@@ -1087,6 +1127,7 @@ function toast(msg,type='ok'){
 // ================== INIT ==================
 renderHome();
 updateCartUI();
+
 </script>
 </body>
 </html>
