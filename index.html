@@ -277,7 +277,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="hdr">
   <div class="hdr-logo">
     <div class="logo-icon">👑</div>
@@ -292,7 +291,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   </div>
 </div>
 
-<!-- SIDEBAR -->
 <div class="sb-overlay" id="sbOv" onclick="closeSB()"></div>
 <div class="sidebar" id="sb">
   <button class="sb-close" onclick="closeSB()">✕</button>
@@ -311,10 +309,8 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   <div class="nav-item" id="navAdmin" onclick="goAdmin();closeSB()"><span class="nav-icon">⚙️</span>لوحة الأدمن</div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ==================== HOME ==================== -->
 <div class="page active" id="homePage">
   <div class="hero">
     <div class="hero-title">👑 مجمدات الملكه الفاخرة</div>
@@ -334,7 +330,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   <div id="productsList"></div>
 </div>
 
-<!-- ==================== CART ==================== -->
 <div class="page" id="cartPage">
   <div class="pg-hdr">
     <button class="back-btn" onclick="showPage('home')">← رجوع</button>
@@ -363,7 +358,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   </div>
 </div>
 
-<!-- ==================== PROFILE ==================== -->
 <div class="page" id="profilePage">
   <div class="pg-hdr">
     <button class="back-btn" onclick="showPage('home')">← رجوع</button>
@@ -384,7 +378,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   <button class="go-home-btn" onclick="showPage('home')">← العودة للرئيسية</button>
 </div>
 
-<!-- ==================== ORDERS ==================== -->
 <div class="page" id="ordersPage">
   <div class="pg-hdr">
     <button class="back-btn" onclick="showPage('profile')">← رجوع</button>
@@ -394,7 +387,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   <button class="go-home-btn" onclick="showPage('home')">← الرئيسية</button>
 </div>
 
-<!-- ==================== ADMIN ==================== -->
 <div class="page" id="adminPage">
   <div class="admin-login-v" id="adminLoginV">
     <div class="al-icon">🔐</div>
@@ -412,7 +404,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
     <div class="admin-sec">
       <div class="success-banner" id="sucBanner">✅ تم حفظ جميع التغييرات بنجاح!</div>
 
-      <!-- Phone Numbers -->
       <div class="a-card">
         <div class="a-card-title">📞 أرقام واتساب المحل</div>
 
@@ -426,13 +417,10 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
         </div>
       </div>
 
-      <!-- Category Tabs -->
       <div class="admin-cat-tabs" id="adminTabs"></div>
 
-      <!-- Products / Offers List -->
       <div id="adminProdList"></div>
 
-      <!-- Add Product -->
       <div class="add-prod-box" id="addProdBox">
         <div class="add-prod-title">➕ إضافة منتج جديد</div>
         <input class="af" id="npName" placeholder="اسم المنتج">
@@ -440,7 +428,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
         <button class="add-prod-btn" onclick="addProduct()">إضافة المنتج</button>
       </div>
 
-      <!-- Add Offer (shown only in offers tab) -->
       <div class="add-offer-box" id="addOfferBox" style="display:none">
         <div class="add-offer-title">🔥 إضافة عرض جديد</div>
         <input class="af" id="noName" placeholder="اسم المنتج / العرض">
@@ -449,14 +436,12 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
         <button class="add-offer-btn" onclick="addOffer()">إضافة العرض</button>
       </div>
 
-      <!-- Add Category -->
       <div class="add-cat-box">
         <div class="add-cat-title">📁 إضافة فئة جديدة</div>
         <input class="af" id="ncName" placeholder="اسم الفئة الجديدة">
         <button class="add-cat-btn" onclick="addCategory()">إضافة الفئة</button>
       </div>
 
-      <!-- Change Password -->
       <div class="chpass-box">
         <div class="a-card-title">🔑 تغيير كلمة المرور</div>
         <input class="af" id="npField" placeholder="كلمة المرور الجديدة" type="password">
@@ -469,12 +454,10 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--white);min-
   </div>
 </div>
 
-<!-- FLOATING CART -->
 <button class="float-cart" id="fcBtn" onclick="showPage('cart')">
   🛒 <span class="fc-badge" id="fcBadge">0</span> <span id="fcTotal">0 ج</span>
 </button>
 
-<!-- EDIT PROFILE MODAL -->
 <div class="modal-ov" id="profModal">
   <div class="modal-box">
     <div class="modal-title">✏️ تعديل بياناتي</div>
@@ -616,7 +599,7 @@ rdb.ref('market_data').on('value', (snapshot) => {
     else if (curPage === 'cart') renderCart();
 });
 
-// دالة حفظ البيانات محلياً وسحابياً
+// دالة حفظ البيانات محلياً فقط للعميل (تمت إزالة كود الرفع منها لمنع الحذف بالخطأ)
 function persist(){
   localStorage.setItem('mk_cats',JSON.stringify(cats));
   localStorage.setItem('mk_offers',JSON.stringify(offers));
@@ -624,11 +607,6 @@ function persist(){
   localStorage.setItem('mk_profile',JSON.stringify(profile));
   localStorage.setItem('mk_orders',JSON.stringify(orders));
   localStorage.setItem('mk_nid',nextId);
-
-  rdb.ref('market_data').set({
-      cats: cats,
-      offers: offers
-  });
 }
 
 // ================== NAVIGATION ==================
@@ -1087,27 +1065,23 @@ function changePass(){
   adminPass=np;localStorage.setItem('mk_apass',adminPass);
   document.getElementById('npField').value='';toast('✅ تم تغيير كلمة المرور','ok');
 }
-// استبدل دالة saveAdmin الحالية بهذا الكود
-function saveAdmin(){
-  // نقوم بتحديث الـ LocalStorage أولاً
-  localStorage.setItem('mk_cats', JSON.stringify(cats));
-  localStorage.setItem('mk_offers', JSON.stringify(offers));
-  localStorage.setItem('mk_nid', nextId);
 
-  // دفع البيانات فوراً لـ Firebase لتنبيه كافة المتصفحات المفتوحة
+// دالة حفظ الأدمن (تم تعديلها لتقوم بالرفع على الفايربيز بشكل صحيح ومستقل)
+function saveAdmin(){
+  persist(); // حفظ محلي
+  
+  // رفع البيانات للفايربيز لإجبار باقي المتصفحات على التحديث
   rdb.ref('market_data').set({
       cats: cats,
       offers: offers
   }).then(() => {
-      const b = document.getElementById('sucBanner');
-      b.style.display = 'block';
-      setTimeout(() => b.style.display = 'none', 3000);
-      toast('✅ تم الحفظ وإرسال التحديثات للعملاء!', 'ok');
-  }).catch((error) => {
-      toast('❌ فشل الحفظ: ' + error.message, 'err');
+      const b=document.getElementById('sucBanner');
+      b.style.display='block';
+      setTimeout(()=>b.style.display='none',3000);
+      toast('✅ تم الحفظ وتحديث أجهزة العملاء!','ok');
+  }).catch(err => {
+      toast('❌ حدث خطأ في الرفع: ' + err.message, 'err');
   });
-
-
 }
 
 // ======= Image Upload =======
@@ -1121,10 +1095,10 @@ function uploadImg(catId,itemId,type,input){
   const reader=new FileReader();
   reader.onload=e=>{
     if(type==='offer'){
-      const o=offers.find(x=>x.id===itemId);if(o){o.img=e.target.result;persist();renderAdminOffers();toast('✅ تم رفع الصورة','ok');}
+      const o=offers.find(x=>x.id===itemId);if(o){o.img=e.target.result;persist();renderAdminOffers();toast('✅ تم رفع الصورة (اضغط حفظ جميع التغييرات للتأكيد)','ok');}
     } else {
       const cat=cats.find(c=>c.id===catId);const p=cat&&cat.products.find(x=>x.id===itemId);
-      if(p){p.img=e.target.result;persist();renderAdminProds();toast('✅ تم رفع الصورة','ok');}
+      if(p){p.img=e.target.result;persist();renderAdminProds();toast('✅ تم رفع الصورة (اضغط حفظ جميع التغييرات للتأكيد)','ok');}
     }
   };
   reader.readAsDataURL(file);
